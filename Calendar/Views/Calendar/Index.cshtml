@@ -1,4 +1,6 @@
-﻿@{ 
+﻿@model CalendarViewModel
+
+@{ 
   Layout = null;
 }
 
@@ -29,7 +31,6 @@
       margin-inline-start: 0;
       margin-inline-end: 0;
       padding-inline-start: 0;
-      list-style: none;
     }
 
     .calendar {
@@ -53,6 +54,7 @@
     .day-of-week-labels, .date-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
+      list-style: none;
     }
 
     .day-of-week-labels {
@@ -63,67 +65,70 @@
     .date-grid {
       flex: 1 1 auto;
       gap: 4px;
+      list-style-position: inside;
+      counter-reset: date-grid;
     }
 
-      .date-grid li {
-        background: #fff;
-        color: #000;
-      }
+    .date-grid li {
+      counter-increment: date-grid;
+      background: #fff;
+      color: #000;
+      padding: 4px;
+    }
 
-      .date-grid::before, .date-grid::after {
+    .date-grid li::before {
+      content: counter(date-grid);
+      font-weight: bold;
+    }
+
+    .date-grid li div {
+      border: 3px solid teal;
+      margin: 4px;
+      padding: 4px;
+      background: lightblue;
+    }
+  </style>
+
+  @if (Model.GridStart > 0)
+  {
+    <style>
+      .date-grid::before {
+        grid-column: span @(Model.GridStart);
         content: "";
         background-color: #ddd;
       }
+    </style>
+  }
 
-      .date-grid::before {
-        grid-column: span 5;
-      }
-
+  @if (Model.GridEnd > 0)
+  {
+    <style>
       .date-grid::after {
-        grid-column: span 1;
+        grid-column: span @(Model.GridEnd);
+        content: "";
+        background-color: #ddd;
       }
-  </style>
+    </style>
+  }
+
   <div class="calendar">
-    <div class="month-label">October</div>
+    <div class="month-label">@Model.CurrentDate.ToString("MMMM yyyy")</div>
     <ol class="day-of-week-labels">
-      <li>Sun</li>
-      <li>Mon</li>
-      <li>Tue</li>
-      <li>Wed</li>
-      <li>Thu</li>
-      <li>Fri</li>
-      <li>Sat</li>
+      @foreach (var day in Calendar.Constants.AbbreviatedDays)
+      {
+        <li>@day</li>
+      }
     </ol>
     <ol class="date-grid">
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>10</li>
-      <li>11</li>
-      <li>12</li>
-      <li>13</li>
-      <li>14</li>
-      <li>15</li>
-      <li>16</li>
-      <li>17</li>
-      <li>18</li>
-      <li>19</li>
-      <li>20</li>
-      <li>21</li>
-      <li>22</li>
-      <li>23</li>
-      <li>24</li>
-      <li>25</li>
-      <li>26</li>
-      <li>27</li>
-      <li>28</li>
-      <li>29</li>
+      @for(var day = 1; day <= Model.DaysInMonth; day++)
+      {
+        <li>
+          @foreach (var item in Model.Events[day])
+          {
+            <div>@item.Description</div>
+          }
+        </li>
+      }
     </ol>
   </div>
 </body>

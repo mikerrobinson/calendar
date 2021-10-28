@@ -2,10 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Calendar.Controllers
 {
@@ -18,14 +14,27 @@ namespace Calendar.Controllers
       _logger = logger;
     }
 
-    public IActionResult Index()
+    public IActionResult Index(int month = 0, int year = 0)
     {
-      return View();
-    }
+      var currentDate = new DateTime((year == 0 ? DateTime.Today.Year : year), (month == 0 ? DateTime.Today.Month : month), DateTime.Today.Day);
+      var model = new CalendarViewModel(currentDate);
 
-    public IActionResult Privacy()
-    {
-      return View();
+      model.Events[1].Add(new EventViewModel()
+      {
+        Description = "Test Event 1"
+      });
+
+      model.Events[1].Add(new EventViewModel()
+      {
+        Description = "Test Event 2"
+      });
+
+      model.Events[2].Add(new EventViewModel()
+      {
+        Description = "Test Event 3"
+      });
+
+      return View(model);
     }
   }
 }
