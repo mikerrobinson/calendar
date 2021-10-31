@@ -36,6 +36,14 @@ namespace Calendar.Models
       } 
     }
 
+    public int RowsOnCalendar
+    {
+      get
+      {
+        return (int)Math.Ceiling((GridStart + DaysInMonth) / 7.0);
+      }
+    }
+
     public Dictionary<int, List<EventViewModel>> Events { get; private set; }
   }
 }

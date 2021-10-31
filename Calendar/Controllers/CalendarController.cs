@@ -14,9 +14,9 @@ namespace Calendar.Controllers
       _logger = logger;
     }
 
-    public IActionResult Index(int month = 0, int year = 0)
+    public IActionResult Index(int month = 0, int year = 0, string view = "monthly-table")
     {
-      var currentDate = new DateTime((year == 0 ? DateTime.Today.Year : year), (month == 0 ? DateTime.Today.Month : month), DateTime.Today.Day);
+      var currentDate = new DateTime((year == 0 ? DateTime.Today.Year : year), (month == 0 ? DateTime.Today.Month : month), ((year == 0 && month == 0) ? DateTime.Today.Day : 1));
       var model = new CalendarViewModel(currentDate);
 
       model.Events[1].Add(new EventViewModel()
@@ -34,7 +34,7 @@ namespace Calendar.Controllers
         Description = "Test Event 3"
       });
 
-      return View(model);
+      return View(view, model);
     }
   }
 }

@@ -1,0 +1,160 @@
+﻿@model CalendarViewModel
+
+@{ 
+  Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar</title>
+</head>
+<body>
+  <style>
+    html {
+      height: 100%;
+      width: 100%;
+      font-family: sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    .calendar {
+      table-layout: fixed;
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+      border: 4px solid #000;
+      background-color: #000;
+      color: #fff;
+    }
+
+    .spacer {
+      background: #ddd;
+    }
+
+    tbody {
+      background: #fff;
+      color: #000;
+    }
+
+    td {
+      text-align: left;
+      vertical-align: top;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .event-list {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      list-style: none;
+      margin-block-start: 1em;
+      margin-block-end: 0;
+      margin-inline-start: 0;
+      margin-inline-end: 0;
+      padding-inline-start: 0;
+    }
+
+    .event {
+      margin: 4px;
+      padding: 4px;
+      background: lightblue;
+    }
+  </style>
+
+<table class="calendar">
+  <thead>
+    <tr>
+      <th colspan="7">@Model.CurrentDate.ToString("MMMM yyyy")</th>
+    </tr>
+    <tr>
+      @foreach (var dayOfWeek in Calendar.Constants.AbbreviatedDays)
+      {
+        <th>@dayOfWeek</th>
+      }
+    </tr>
+  </thead>
+  @{
+    var slot = Model.GridStart;
+  }
+  <tbody>
+    @for (var row = 0; row < Model.RowsOnCalendar; row++)
+      {
+    <tr>
+      @if (slot == Model.GridStart && Model.GridStart > 0)
+      {
+        <td class="spacer" colspan="@Model.GridStart"></td>
+      }
+      @for (var count = slot % 7; count < 7 && (slot - Model.GridStart) < Model.DaysInMonth; count++)
+      {
+        slot++;
+        <td class="day">
+          @(slot - Model.GridStart)
+          @if (Model.Events[slot - Model.GridStart].Count > 0)
+          {
+          <ul class="event-list">
+            @foreach (var item in Model.Events[slot - Model.GridStart])
+            {
+              <li class="event">@item.Description</li>
+            }
+          </ul>
+          }
+        </td>
+      }
+      @if (slot == Model.DaysInMonth + Model.GridStart && Model.GridEnd > 0)
+      {
+        <td class="spacer" colspan="@Model.GridEnd"></td>
+      }
+    </tr>
+      }
+    @*@if (day == 0 || (day % 7) == Model.GridStart)
+    {
+      <tr>
+    }
+    @if (day == 0 && Model.GridStart > 0)
+    {
+      <td colspan="@Model.GridStart"></td>
+    }
+    @while (day + Model.GridStart < Model.DaysInMonth + Model.GridStart)
+    {
+      day++;
+      <td>@day</td>
+    }
+    @if (day > Model.DaysInMonth && Model.GridEnd > 0)
+    {
+      <td colspan="@Model.GridStart"></td>
+    }
+    @if (day == 0 || (day % 7) == Model.GridStart)
+    {
+      Html.Raw("</trr>");
+    }*@
+
+
+    @*@for (var row = 1; rows <= Model.RowsOnCalendar; row++)
+      {
+        <tr>
+        </tr>
+      }
+      @for (var day = 1; day <= Model.DaysInMonth; day++)
+      {
+        <li>
+          @foreach (var item in Model.Events[day])
+          {
+            <div>@item.Description</div>
+          }
+        </li>
+      }*@
+    </tbody>
+  </table>
+</body>
+</html>
