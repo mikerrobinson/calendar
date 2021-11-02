@@ -1,0 +1,19 @@
+﻿@model System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>>
+
+@{
+  ViewData["Title"] = "Echo Page";
+}
+
+<div class="text-center">
+  <h1 class="display-4">Echo Controller</h1>
+  @if (Model.Count() > 0)
+  {
+    <dl style="text-align: left;">
+      @foreach(var kvp in Model)
+        {
+          <dt>@kvp.Key</dt>
+          <dd>@kvp.Value</dd>
+        }
+    </dl>
+  }
+</div>
