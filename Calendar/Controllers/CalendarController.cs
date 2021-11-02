@@ -1,17 +1,24 @@
 ﻿using Calendar.Models;
+using Google.Apis.Auth.AspNetCore3;
+using Google.Apis.Calendar.v3;
+using Google.Apis.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Calendar.Controllers
 {
   public class CalendarController : Controller
   {
     private readonly ILogger<HomeController> _logger;
+    private readonly IGoogleAuthProvider _auth;
 
-    public CalendarController(ILogger<HomeController> logger)
+    public CalendarController(ILogger<HomeController> logger, IGoogleAuthProvider auth)
     {
       _logger = logger;
+      _auth = auth;
     }
 
     public IActionResult Index(int month = 0, int year = 0, string view = "monthly-table")
@@ -35,6 +42,38 @@ namespace Calendar.Controllers
       });
 
       return View(view, model);
+    }
+
+    [GoogleScopedAuthorize(CalendarService.ScopeConstants.CalendarReadonly)]
+    public async Task<IActionResult> Test()
+    {
+      var cred = await _auth.GetCredentialAsync();
+      var service = new CalendarService(new BaseClientService.Initializer
+      {
+        HttpClientInitializer = cred
+      });
+      var calendars = await service.CalendarList.List().ExecuteAsync();
+      var events = await service.Events.List("family14235578936734473429@group.calendar.google.com").ExecuteAsync();
+
+      //var names = string.Join('\n', calendars.Items.Select(c => $"{c.Summary} ({c.Id})" ));
+      var names = string.Join('\n', events.Items.Select(e => $"{e.Summary} ({FormatTimeRange(e.Start.DateTime.Value, e.End.DateTime.Value)})" ));
+      return Content(names);
+    }
+
+    private string FormatTimeRange(DateTime start, DateTime end)
+    {
+      if (start.Hour < 12 && end.Hour < 12)
+      {
+        return $"{start.Hour}-{end.Hour}am";
+      } 
+      else if (start.Hour > 12 && end.Hour > 12) 
+      {
+        return $"{start.Hour}-{end.Hour}pm";
+      } 
+      else
+      {
+        return $"{start.Hour}am-{end.Hour}pm";
+      }
     }
   }
 }
