@@ -21,43 +21,79 @@ namespace Calendar.Controllers
       _auth = auth;
     }
 
-    public IActionResult Index(int month = 0, int year = 0, string view = "monthly-table")
+    [GoogleScopedAuthorize(CalendarService.ScopeConstants.CalendarReadonly)]
+    public async Task<IActionResult> Index(int month = 0, int year = 0, string view = "monthly-table")
     {
       var currentDate = new DateTime((year == 0 ? DateTime.Today.Year : year), (month == 0 ? DateTime.Today.Month : month), ((year == 0 && month == 0) ? DateTime.Today.Day : 1));
       var model = new CalendarViewModel(currentDate);
 
-      model.Events[1].Add(new EventViewModel()
+      var cred = await _auth.GetCredentialAsync();
+      var service = new CalendarService(new BaseClientService.Initializer
       {
-        Description = "Test Event 1"
+        HttpClientInitializer = cred
       });
+      var eventsRequest = service.Events.List("sv83o5bgqa52flhavimd3kji7pnm335r@import.calendar.google.com");
+      eventsRequest.SingleEvents = true;
+      eventsRequest.TimeMin = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0);
+      eventsRequest.TimeMax = new DateTime(currentDate.Year, currentDate.Month, DateTime.DaysInMonth(currentDate.Year, currentDate.Month), 23, 59, 59);
+      eventsRequest.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+      var events = await eventsRequest.ExecuteAsync();
 
-      model.Events[1].Add(new EventViewModel()
+      foreach (var item in events.Items)
       {
-        Description = "Test Event 2"
-      });
-
-      model.Events[2].Add(new EventViewModel()
-      {
-        Description = "Test Event 3"
-      });
-
+        var day = item.Start.DateTime.Value.Day;
+        model.Events[day].Add(new EventViewModel()
+        {
+          Description = item.Summary,
+          Start = item.Start.DateTime.Value,
+          End = item.End.DateTime.Value
+        });
+      }
       return View(view, model);
     }
 
     [GoogleScopedAuthorize(CalendarService.ScopeConstants.CalendarReadonly)]
     public async Task<IActionResult> Test()
     {
+      var model = new CalendarViewModel(DateTime.Now);
+
       var cred = await _auth.GetCredentialAsync();
       var service = new CalendarService(new BaseClientService.Initializer
       {
         HttpClientInitializer = cred
       });
       var calendars = await service.CalendarList.List().ExecuteAsync();
-      var events = await service.Events.List("family14235578936734473429@group.calendar.google.com").ExecuteAsync();
+      var eventsRequest = service.Events.List("sv83o5bgqa52flhavimd3kji7pnm335r@import.calendar.google.com");
+      eventsRequest.SingleEvents = true;
+      eventsRequest.TimeMin = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1, 0, 0, 0);
+      eventsRequest.TimeMax = new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.DaysInMonth(DateTime.Today.Year, DateTime.Today.Month), 23, 59, 59);
+      eventsRequest.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+      var events = await eventsRequest.ExecuteAsync();
 
       //var names = string.Join('\n', calendars.Items.Select(c => $"{c.Summary} ({c.Id})" ));
-      var names = string.Join('\n', events.Items.Select(e => $"{e.Summary} ({FormatTimeRange(e.Start.DateTime.Value, e.End.DateTime.Value)})" ));
-      return Content(names);
+
+      //var names = string.Join('\n', events.Items.Select(e => $"{e.Summary} ({e.Id})" ));
+      //return Content(names);
+
+      //var startOfMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1, 0, 0, 0);
+
+      foreach (var item in events.Items)
+      {
+        var day = item.Start.DateTime.Value.Day;
+        model.Events[day].Add(new EventViewModel()
+        {
+          Description = item.Summary,
+          Start = item.Start.DateTime.Value,
+          End = item.End.DateTime.Value
+        });
+        model.EventList.Add(new EventViewModel()
+        {
+          Description = item.Summary,
+          Start = item.Start.DateTime.Value,
+          End = item.End.DateTime.Value
+        });
+      }
+      return View(model);
     }
 
     private string FormatTimeRange(DateTime start, DateTime end)

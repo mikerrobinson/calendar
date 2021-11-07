@@ -1,0 +1,25 @@
+﻿@model CalendarViewModel
+
+@{ 
+  Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar</title>
+</head>
+<body>
+  <h1>Events</h1>
+  @*@Html.DisplayFor(c => c.EventList)*@
+  
+  @for (var i = 1; i <= Model.DaysInMonth; i++)
+  {
+    <ul>@i
+      @Html.DisplayFor(m => m.Events[i])
+    </ul>
+  }
+</body>
+</html>

@@ -21,6 +21,8 @@ namespace Calendar.Models
       {
         Events.Add(day, new List<EventViewModel>());
       }
+
+      EventList = new List<EventViewModel>();
     }
 
     public DateTime CurrentDate { get; private set; }
@@ -45,5 +47,7 @@ namespace Calendar.Models
     }
 
     public Dictionary<int, List<EventViewModel>> Events { get; private set; }
+
+    public List<EventViewModel> EventList { get; private set; }
   }
 }
